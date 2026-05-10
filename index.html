@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moodboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: #f7f4ef;
+  cursor: grab;
+  font-family: 'Cormorant Garamond', serif;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body.grabbing { cursor: grabbing; }
+
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+}
+
+#canvas {
+  position: absolute;
+  top: 0; left: 0;
+  width: 6000px; height: 4000px;
+  transform-origin: 0 0;
+}
+
+.photo {
+  position: absolute;
+  cursor: pointer;
+  transition: box-shadow 0.35s ease;
+  will-change: transform;
+}
+
+.photo img {
+  display: block;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  filter: contrast(1.04) saturate(0.8);
+  pointer-events: none;
+  transition: filter 0.4s;
+  -webkit-user-drag: none;
+}
+
+.photo:hover {
+  box-shadow: 0 24px 64px rgba(0,0,0,0.2);
+  z-index: 500 !important;
+}
+
+.photo:hover img {
+  filter: contrast(1.07) saturate(0.9);
+}
+
+.photo .label {
+  position: absolute;
+  bottom: -1.6rem;
+  left: 0;
+  font-size: 0.58rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: #a09280;
+  opacity: 0;
+  transition: opacity 0.3s;
+  white-space: nowrap;
+}
+
+.photo:hover .label { opacity: 1; }
+
+/* UI chrome — minimal */
+#logo {
+  position: fixed;
+  top: 2rem; left: 2.5rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: #1a1714;
+  opacity: 0.3;
+  z-index: 500;
+  pointer-events: none;
+  font-style: italic;
+}
+
+#hint {
+  position: fixed;
+  bottom: 2.8rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.55rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #b0a090;
+  z-index: 500;
+  pointer-events: none;
+  transition: opacity 1.8s ease;
+}
+#hint.gone { opacity: 0; }
+
+#controls {
+  position: fixed;
+  bottom: 2.3rem;
+  right: 2.5rem;
+  display: flex;
+  gap: 2px;
+  z-index: 500;
+}
+
+#controls button {
+  width: 30px; height: 30px;
+  background: rgba(247,244,239,0.9);
+  border: 0.5px solid rgba(160,146,128,0.35);
+  color: #7a6a5a;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+  backdrop-filter: blur(6px);
+  font-family: inherit;
+}
+#controls button:hover { background: #ede8df; }
+</style>
+</head>
+<body>
+
+<div id="logo">Atelier — Studio</div>
+<div id="hint">Arrasta para explorar &nbsp;·&nbsp; Scroll para zoom</div>
+
+<div id="canvas"></div>
+
+<div id="controls">
+  <button id="zout">−</button>
+  <button id="zin">+</button>
+</div>
+
+<script>
+const PHOTOS = [
+  { src:"https://images.unsplash.com/photo-1607190074257-dd4b7af0309f?w=900&q=85&fit=crop", w:400,h:540, label:"Cerimónia",   x:320,  y:160,  r:-1.2 },
+  { src:"https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=900&q=85&fit=crop", w:330,h:450, label:"O casal",     x:800,  y:90,   r:0.9  },
+  { src:"https://images.unsplash.com/photo-1519741497674-611481863552?w=900&q=85&fit=crop", w:540,h:360, label:"Os votos",    x:1220, y:280,  r:-0.5 },
+  { src:"https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=700&q=85&fit=crop", w:290,h:390, label:"Detalhe",    x:160,  y:680,  r:1.4  },
+  { src:"https://images.unsplash.com/photo-1532712938310-34cb3982ef74?w=900&q=85&fit=crop", w:460,h:310, label:"O beijo",    x:720,  y:600,  r:-0.7 },
+  { src:"https://images.unsplash.com/photo-1529636798458-92182e662485?w=1200&q=85&fit=crop",w:360,h:500, label:"A chegada",  x:1350, y:820,  r:0.4  },
+  { src:"https://images.unsplash.com/photo-1469371670807-013ccf25f16a?w=1200&q=85&fit=crop",w:580,h:390, label:"A sala",     x:1800, y:140,  r:-0.3 },
+  { src:"https://images.unsplash.com/photo-1524863479829-916d8e77f114?w=900&q=85&fit=crop", w:350,h:470, label:"O toque",    x:460,  y:1100, r:0.6  },
+  { src:"https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=700&q=85&fit=crop", w:290,h:370, label:"Véu",        x:1040, y:1020, r:-1.5 },
+  { src:"https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=1200&q=85&fit=crop",w:500,h:350, label:"First look", x:1680, y:600,  r:0.8  },
+  { src:"https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=500&q=80&fit=crop",  w:270,h:350, label:"Flores",     x:200,  y:1530, r:1.6  },
+  { src:"https://images.unsplash.com/photo-1606800052052-a08af7148866?w=500&q=80&fit=crop",  w:290,h:290, label:"Aliança",    x:780,  y:1490, r:-0.6 },
+  { src:"https://images.unsplash.com/photo-1501426026826-31c667bdf23d?w=500&q=80&fit=crop",  w:370,h:270, label:"Textura",    x:2070, y:280,  r:-1.1 },
+  { src:"https://images.unsplash.com/photo-1464699908537-0954e50791ee?w=800&q=85&fit=crop",  w:420,h:560, label:"A mesa",     x:1380, y:1330, r:0.5  },
+  { src:"https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1000&q=85&fit=crop", w:510,h:350, label:"Brinde",     x:2040, y:880,  r:-0.4 },
+  { src:"https://images.unsplash.com/photo-1510076857177-7470076d4098?w=600&q=85&fit=crop",  w:310,h:410, label:"Alegria",    x:590,  y:1940, r:1.2  },
+  { src:"https://images.unsplash.com/photo-1550005809-91ad75fb315f?w=700&q=85&fit=crop",     w:350,h:490, label:"Convidados", x:1160, y:1800, r:-0.8 },
+  { src:"https://images.unsplash.com/photo-1518049362265-d5b2a6467637?w=500&q=80&fit=crop",  w:460,h:330, label:"Dança",      x:1880, y:1580, r:0.3  },
+  { src:"https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=500&q=80&fit=crop",  w:290,h:410, label:"Retrato",    x:2420, y:620,  r:-1.4 },
+];
+
+const canvas = document.getElementById('canvas');
+
+// Build photos
+PHOTOS.forEach((p, i) => {
+  const el = document.createElement('div');
+  el.className = 'photo';
+  el.style.cssText = `left:${p.x}px;top:${p.y}px;width:${p.w}px;height:${p.h}px;transform:rotate(${p.r}deg);z-index:${i+1};`;
+
+  const img = document.createElement('img');
+  img.src = p.src;
+  img.loading = 'lazy';
+  img.alt = p.label;
+
+  const lbl = document.createElement('div');
+  lbl.className = 'label';
+  lbl.textContent = p.label;
+
+  el.appendChild(img);
+  el.appendChild(lbl);
+  canvas.appendChild(el);
+
+  // Individual photo dragging
+  let dragging = false, startX, startY, origLeft, origTop;
+
+  el.addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
+    e.stopPropagation();
+    dragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    origLeft = parseInt(el.style.left);
+    origTop = parseInt(el.style.top);
+    el.style.zIndex = 999;
+    el.style.transition = 'box-shadow 0.3s, filter 0.4s';
+    el.style.cursor = 'grabbing';
+    el.style.boxShadow = '0 32px 80px rgba(0,0,0,0.25)';
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const dx = (e.clientX - startX) / viewScale;
+    const dy = (e.clientY - startY) / viewScale;
+    el.style.left = (origLeft + dx) + 'px';
+    el.style.top  = (origTop  + dy) + 'px';
+  });
+
+  document.addEventListener('mouseup', e => {
+    if (!dragging) return;
+    dragging = false;
+    el.style.cursor = 'pointer';
+    el.style.zIndex = i + 1;
+    el.style.boxShadow = '';
+  });
+});
+
+// ---- CANVAS PAN & ZOOM ----
+let viewX = -680, viewY = -100, viewScale = 0.72;
+let panning = false, panStartX, panStartY;
+
+function applyView() {
+  canvas.style.transform = `translate(${viewX}px,${viewY}px) scale(${viewScale})`;
+}
+applyView();
+
+document.body.addEventListener('mousedown', e => {
+  if (e.target.closest('.photo')) return;
+  panning = true;
+  panStartX = e.clientX - viewX;
+  panStartY = e.clientY - viewY;
+  document.body.classList.add('grabbing');
+});
+
+document.addEventListener('mousemove', e => {
+  if (!panning) return;
+  viewX = e.clientX - panStartX;
+  viewY = e.clientY - panStartY;
+  applyView();
+});
+
+document.addEventListener('mouseup', () => {
+  panning = false;
+  document.body.classList.remove('grabbing');
+});
+
+// Zoom
+function zoom(delta, cx, cy) {
+  cx = cx ?? window.innerWidth / 2;
+  cy = cy ?? window.innerHeight / 2;
+  const next = Math.min(2.2, Math.max(0.2, viewScale + delta));
+  viewX = cx - (cx - viewX) * (next / viewScale);
+  viewY = cy - (cy - viewY) * (next / viewScale);
+  viewScale = next;
+  applyView();
+}
+
+document.addEventListener('wheel', e => {
+  e.preventDefault();
+  zoom(e.deltaY < 0 ? 0.06 : -0.06, e.clientX, e.clientY);
+}, { passive: false });
+
+document.getElementById('zin').onclick  = () => zoom(0.12);
+document.getElementById('zout').onclick = () => zoom(-0.12);
+
+// Hint
+let hintGone = false;
+document.addEventListener('mousedown', () => {
+  if (hintGone) return;
+  hintGone = true;
+  document.getElementById('hint').classList.add('gone');
+}, { once: false });
+
+// Touch
+let lastDist = null, lastTX, lastTY;
+
+document.addEventListener('touchstart', e => {
+  if (e.touches.length === 1) {
+    lastTX = e.touches[0].clientX - viewX;
+    lastTY = e.touches[0].clientY - viewY;
+  }
+  if (e.touches.length === 2) {
+    lastDist = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+  }
+}, { passive: true });
+
+document.addEventListener('touchmove', e => {
+  if (e.touches.length === 1) {
+    viewX = e.touches[0].clientX - lastTX;
+    viewY = e.touches[0].clientY - lastTY;
+    applyView();
+  }
+  if (e.touches.length === 2) {
+    const d = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+    if (lastDist) zoom((d - lastDist) * 0.005);
+    lastDist = d;
+  }
+}, { passive: true });
+
+document.addEventListener('touchend', () => { lastDist = null; });
+</script>
+</body>
+</html>
