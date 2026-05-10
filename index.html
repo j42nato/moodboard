@@ -116,7 +116,7 @@ body::after {
 </head>
 <body>
 
-<div id="logo">Atelier — Studio</div>
+<div id="logo">João Fortunato</div>
 <div id="hint">Arrasta para explorar &nbsp;·&nbsp; Scroll para zoom</div>
 <div id="canvas"></div>
 <div id="controls">
@@ -126,30 +126,30 @@ body::after {
 
 <script>
 const PHOTOS = [
-  { src:"1J3A1240.jpg",              w:420, h:560, x:300,  y:150,  r:-1.2 },
-  { src:"1J3A1286.jpg",              w:540, h:360, x:800,  y:80,   r:0.6  },
-  { src:"1J3A1746.jpg",              w:360, h:480, x:1420, y:220,  r:-0.5 },
-  { src:"1J3A2046.jpg",              w:500, h:340, x:180,  y:700,  r:1.1  },
-  { src:"1J3A2253.jpg",              w:340, h:460, x:760,  y:580,  r:-0.8 },
-  { src:"1J3A2292.jpg",              w:560, h:380, x:1200, y:760,  r:0.4  },
-  { src:"1J3A2313.jpg",              w:300, h:400, x:1860, y:120,  r:-1.5 },
-  { src:"1J3A3091.jpg",              w:460, h:320, x:2240, y:380,  r:0.7  },
-  { src:"1J3A3108.jpg",              w:380, h:520, x:430,  y:1140, r:1.3  },
-  { src:"1J3A3121.jpg",              w:520, h:360, x:1020, y:1100, r:-0.4 },
-  { src:"1J3A4847.jpg",              w:340, h:460, x:1680, y:620,  r:0.9  },
-  { src:"1J3A5186.jpg",              w:580, h:400, x:2080, y:820,  r:-0.6 },
-  { src:"1J3A6335.jpg",              w:300, h:420, x:200,  y:1580, r:-1.8 },
-  { src:"1J3A7574.jpg",              w:500, h:350, x:680,  y:1520, r:0.5  },
-  { src:"1J3A8026.jpg",              w:360, h:500, x:1340, y:1360, r:-0.3 },
-  { src:"IMG_0419.jpg",              w:440, h:300, x:1940, y:1400, r:1.0  },
-  { src:"IMG_2109.jpg",              w:300, h:420, x:2480, y:640,  r:-1.1 },
-  { src:"IMG_2586.jpg",              w:480, h:340, x:560,  y:1960, r:0.8  },
-  { src:"IMG_3485.jpg",              w:360, h:480, x:1140, y:1820, r:-0.7 },
-  { src:"IMG_4751-Enhanced-NR.jpg",  w:520, h:380, x:1780, y:1660, r:0.3  },
-  { src:"IMG_6177.jpg",              w:300, h:400, x:2360, y:1180, r:-1.4 },
-  { src:"IMG_6723.jpg",              w:460, h:320, x:2600, y:200,  r:0.6  },
-  { src:"IMG_8253.jpg",              w:380, h:520, x:2720, y:800,  r:-0.9 },
-  { src:"IMG_8491.jpg",              w:500, h:360, x:2500, y:1600, r:1.2  },
+  { src:"1J3A1240.jpg",              w:360, h:540, x:300,  y:150,  r:-1.2 },
+  { src:"1J3A1286.jpg",              w:360, h:540, x:800,  y:80,   r:0.6  },
+  { src:"1J3A1746.jpg",              w:360, h:540, x:1420, y:220,  r:-0.5 },
+  { src:"1J3A2046.jpg",              w:360, h:540, x:180,  y:700,  r:1.1  },
+  { src:"1J3A2253.jpg",              w:360, h:540, x:760,  y:580,  r:-0.8 },
+  { src:"1J3A2292.jpg",              w:540, h:360, x:1200, y:760,  r:0.4  },
+  { src:"1J3A2313.jpg",              w:360, h:540, x:1860, y:120,  r:-1.5 },
+  { src:"1J3A3091.jpg",              w:540, h:360, x:2240, y:380,  r:0.7  },
+  { src:"1J3A3108.jpg",              w:360, x:2480, y:640,  r:-1.1  },
+  { src:"1J3A3121.jpg",              w:360, h:540, x:1020, y:1100, r:-0.4 },
+  { src:"1J3A4847.jpg",              w:360, h:540, x:1680, y:620,  r:0.9  },
+  { src:"1J3A5186.jpg",              w:540, h:360, x:2080, y:820,  r:-0.6 },
+  { src:"1J3A6335.jpg",              w:540, h:360, x:2500, y:1600, r:1.2 },
+  { src:"1J3A7574.jpg",              w:360, h:540, x:680,  y:1520, r:0.5  },
+  { src:"1J3A8026.jpg",              w:360, h:540, x:1340, y:1360, r:-0.3 },
+  { src:"IMG_0419.jpg",              w:360, h:540, x:1940, y:1400, r:1.0  },
+  { src:"IMG_2109.jpg",              w:360, h:540, x:430,  y:1140, r:1.3 },
+  { src:"IMG_2586.jpg",              w:540, h:360, x:560,  y:1960, r:0.8  },
+  { src:"IMG_3485.jpg",              w:540, h:360, x:1140, y:1820, r:-0.7 },
+  { src:"IMG_4751-Enhanced-NR.jpg",  w:540, h:360, x:1780, y:1660, r:0.3  },
+  { src:"IMG_6177.jpg",              w:360, h:540, x:2360, y:1180, r:-1.4 },
+  { src:"IMG_6723.jpg",              w:360, h:540, x:2600, y:200,  r:0.6  },
+  { src:"IMG_8253.jpg",              w:540, h:360, x:2720, y:800,  r:-0.9 },
+  { src:"IMG_8491.jpg",              w:540, h:360, x:200,  y:1580, r:-1.8  },
 ];
 
 const canvas = document.getElementById('canvas');
